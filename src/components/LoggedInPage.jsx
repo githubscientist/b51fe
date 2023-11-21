@@ -1,15 +1,47 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-function LoggedInPage({ user, setUser, token, setToken }) {
+function LoggedInPage({ user, setUser, token, setToken, isRegistered, setIsRegistered }) {
 
   const [newNote, setNewNote] = useState('');
+  const [notes, setNotes] = useState([]);
 
-    const onLogout = () => {
+  const fetchNotes = async () => {
+    // prepare the token object (authorization header)
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    };
 
-        setUser(null);
-        setToken(null);
+    console.log('Fetching notes...');
+    try {
+      const response = await axios.get('http://localhost:3001/api/notes', config);
+
+      console.log('Notes fetched successfully');
+      console.log(response.data);
+
+      setNotes(response.data);
+
+    } catch (e) {
+      console.log('Error fetching notes', e);
     }
+  }
+
+  useEffect(() => {
+    fetchNotes();
+  }, []);
+
+  const onLogout = () => {
+
+    setUser(null);
+    setToken(null);
+
+    window.localStorage.removeItem('user');
+    window.localStorage.removeItem('token');
+
+    setIsRegistered(true);
+  }
   
   const addNote = async (e) => {
     e.preventDefault();
@@ -31,6 +63,7 @@ function LoggedInPage({ user, setUser, token, setToken }) {
       console.log('Note added successfully');
       console.log(response.data);
       setNewNote('');
+      fetchNotes();
     } catch (e) {
       console.log('Error adding note', e);
     }
@@ -49,7 +82,13 @@ function LoggedInPage({ user, setUser, token, setToken }) {
           required
         />
         <button type='submit'>save</button>
-        </form>
+      </form>
+      
+      <ul>
+        {
+          notes.map(note => <li key={note._id}>{note.content}</li>)
+        }
+      </ul>
     </div>
   )
 }

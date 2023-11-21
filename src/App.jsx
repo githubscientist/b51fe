@@ -42,6 +42,8 @@ function App() {
             setUser={setUser}
             token={token} 
             setToken={setToken}
+            isRegistered={isRegistered}
+            setIsRegistered={setIsRegistered}
           />
         ) : (
             isRegistered ? (
